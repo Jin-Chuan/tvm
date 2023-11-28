@@ -194,7 +194,7 @@ def bert():
     }
     input_list = []
     for k, v in inputs.items():
-        print(k)
+        # print(k)
         input_list.append(v)
 
     shape_list = []
@@ -233,29 +233,10 @@ if __name__ == "__main__":
         for f in node["kernels"]:
             funcs[node['name']].append(f['name'])
 
-    nop_pres={}
-    idx=0
     for node in graph["nodes"]:
         if node["op"] == 'null':
-            idx+=1
             continue
         if node["attrs"]["func_name"]=="__nop":  # name reshape_nop不唯一
-            pres=[]
-            todos=[]
-            for pre,_,_ in node["inputs"]:
-                if graph["nodes"][pre]["name"] == "reshape_nop":
-                    todos.append(pre)
-                else:
-                    pres.append(pre)
-            #逐条边扩展
-            for x in todos:# 只追加
-                for pre,_,_ in graph["nodes"][x]["inputs"]:
-                    if graph["nodes"][pre]["name"] == "reshape_nop":
-                        todos.append(pre)
-                    else:
-                        pres.append(pre)
-            nop_pres[idx]=pres
-            idx+=1
             continue
         
         DAG[node["name"]] = {}
@@ -269,14 +250,9 @@ if __name__ == "__main__":
         for pre, _, __ in node["inputs"]:
             if graph["nodes"][pre]["op"] == 'null':
                 continue
-            if graph["nodes"][pre]["name"] == "reshape_nop":
-                for x in nop_pres[pre]:
-                    DAG[node["name"]]["prenode"].append(graph["nodes"][x]["name"])
-            else:
-                DAG[node["name"]]["prenode"].append(graph["nodes"][pre]["name"])
-        idx+=1
+            DAG[node["name"]]["prenode"].append(graph["nodes"][pre]["name"])
 
-    #next没用到 prenode类似邻接表，有向边存pre就够了 pre和next包含的信息等价
+    #next没用到 
     for name in DAG:
         node = DAG[name]
         DAG[name]["next"] = []
@@ -284,14 +260,6 @@ if __name__ == "__main__":
             node1 = DAG[name1]
             if name in node1["prenode"]:
                 DAG[name]["next"].append(name1)
-
-    # check nop
-    # pdb.set_trace()
-    for name in DAG:
-        node=DAG[name]
-        if "reshape_nop" in node['prenode'] or "reshape_nop" in DAG[name]['next']:#后续只关心每个节点的入度是否为0，因为reshape_nop有且仅有一个前继，通过传递性，前继有reshape_nop的节点入度一定不为0
-            print(name)
-            raise Exception("nop")
 
     i = 0
     for name in DAG:
