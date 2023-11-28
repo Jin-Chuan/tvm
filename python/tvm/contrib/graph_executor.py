@@ -152,6 +152,7 @@ class GraphModule(object):
 
     def __init__(self, module):
         self.module = module
+        # print(type(module))
         self._set_input = module["set_input"]
 
         # TODO(shingjan): The graph_executor in C doesn't have
@@ -174,6 +175,7 @@ class GraphModule(object):
         self._get_num_outputs = module["get_num_outputs"]
         self._get_input_index = module["get_input_index"]
         self._get_input_info = module["get_input_info"]
+        # print(self._get_input_info())
         self._get_num_inputs = module["get_num_inputs"]
         self._load_params = module["load_params"]
         self._share_params = module["share_params"]

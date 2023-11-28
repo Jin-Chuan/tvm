@@ -31,6 +31,7 @@
 #include <tvm/runtime/profiling.h>
 #include <tvm/runtime/registry.h>
 #include <tvm/runtime/serializer.h>
+#include <tvm/runtime/func_arg_recorder.h>
 
 #include <algorithm>
 #include <functional>
@@ -584,10 +585,15 @@ std::pair<std::function<void()>, std::shared_ptr<GraphExecutor::OpArgs>> GraphEx
   tvm::runtime::PackedFunc pf = module_.GetFunction(param.func_name, true);
   ICHECK(pf != nullptr) << "no such function in module: " << param.func_name;
 
-  auto fexec = [arg_ptr, pf]() {
+  auto fexec = [arg_ptr, pf, param]() {
     TVMRetValue rv;
     TVMArgs targs(arg_ptr->arg_values.data(), arg_ptr->arg_tcodes.data(),
                   static_cast<int>(arg_ptr->arg_values.size()));
+    std::vector<void *> arg_pointers;
+    for (size_t i = 0; i < arg_ptr->args.size(); ++i) {
+      arg_pointers.push_back(((DLTensor*)arg_ptr->arg_values[i].v_handle)->data);
+    }
+    global_recorder.NewHostRecord(param.func_name, arg_pointers);
     pf.CallPacked(targs, &rv);
   };
   return {fexec, arg_ptr};
@@ -722,6 +728,10 @@ PackedFunc GraphExecutor::GetFunction(const String& name, const ObjectPtr<Object
       input_info.Set("shape", shape_info);
       input_info.Set("dtype", dtype_info);
       *rv = input_info;
+    }); 
+  } else if (name == "get_schedule_json"){
+    return PackedFunc([](TVMArgs args,TVMRetValue* rv){
+      *rv=global_recorder.ToJson();
     });
   } else {
     return PackedFunc();

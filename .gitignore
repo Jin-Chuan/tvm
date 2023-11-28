@@ -1,3 +1,6 @@
+3rdparty/
+tests/tvm/bert_model_weights.pth
+tests/tvm/bert-base-uncased/pytorch_model.bin
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

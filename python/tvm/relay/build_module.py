@@ -42,7 +42,7 @@ from .backend import interpreter as _interpreter
 from .backend.utils import mangle_module_name
 from .backend.vm import VMExecutor
 from .transform import InferType
-
+import pdb
 
 def _convert_param_map(params):
     inputs = {}
@@ -61,6 +61,7 @@ class BuildModule(object):
     def __init__(self):
         self.mod = _build_module._BuildModule()
         self._get_graph_json = self.mod["get_graph_json"]
+        # print(self._get_graph_json)
         self._get_module = self.mod["get_module"]
         self._build = self.mod["build"]
         self._optimize = self.mod["optimize"]
@@ -404,6 +405,7 @@ def build(
         else:
             assert False, "Executor " + executor + " not supported"
 
+        # pdb.set_trace()
         return executor_factory
 
 
