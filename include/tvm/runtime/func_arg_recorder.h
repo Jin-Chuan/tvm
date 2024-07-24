@@ -22,7 +22,7 @@ public:
   void AllocArg(void* arg, size_t size);
 
   void NewDeviceRecord(std::string name, std::vector<void*> args, size_t launch_params[6]);
-
+  void init(){records.clear();}
   void Print();
 
  std::string ToJson();
