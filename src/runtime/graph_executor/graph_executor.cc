@@ -733,6 +733,11 @@ PackedFunc GraphExecutor::GetFunction(const String& name, const ObjectPtr<Object
     return PackedFunc([](TVMArgs args,TVMRetValue* rv){
       *rv=global_recorder.ToJson();
     });
+  } else if (name == "init")
+  {
+    return PackedFunc([](TVMArgs args,TVMRetValue* rv){
+      global_recorder.init();
+    });
   } else {
     return PackedFunc();
   }
